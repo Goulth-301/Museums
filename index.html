@@ -226,20 +226,22 @@
 
         for (const docSnap of snapshot.docs) {
           const m = docSnap.data();
-          const photoURL = m.photoURL || `museums_pictures/${docSnap.id}.jpg`;
+          const photoURL = await getPhotoURL(docSnap.id);
 
           const card = document.createElement('div');
           card.className = 'museum-card';
           card.innerHTML = `
             <div class="museum-card-image">
-              <img src="${photoURL}" alt="${m.name}" onerror="this.style.display='none'">
+              <img src="${photoURL}"
+                   alt="${m.name}"
+                   onerror="this.src='museums_pictures/${docSnap.id}.jpeg'; this.onerror=null;">
             </div>
             <div class="museum-card-body">
               <span class="museum-card-category">${m.category || ''}</span>
               <h3 class="museum-card-name">${m.name}</h3>
               <p class="museum-card-city">📍 ${m.city}</p>
               <p class="museum-card-desc">${m.description || ''}</p>
-              <a href="#" class="museum-card-link">View details →</a>
+              <a href="museum.html?id=${docSnap.id}" class="museum-card-link">View details →</a>
             </div>
           `;
           list.appendChild(card);
