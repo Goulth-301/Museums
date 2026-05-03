@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Upload Museums to Firestore</title>
+  <style>
+    body { font-family: monospace; background: #111; color: #eee; padding: 30px; }
+    h1 { color: #B8935A; margin-bottom: 20px; }
+    button { background: #B8935A; color: white; border: none; padding: 12px 28px; font-size: 1rem; cursor: pointer; border-radius: 4px; }
+    button:hover { background: #9c7e5a; }
+    #log { margin-top: 24px; line-height: 2; }
+    .ok  { color: #6fcf97; }
+    .err { color: #eb5757; }
+    .info { color: #aaa; }
+  </style>
+</head>
+<body>
+  <h1>🏛️ Upload Museums → Firestore</h1>
+  <p class="info">Abre esta página en el navegador, pulsa el botón y espera a que terminen los 33 museos.</p>
+  <br/>
+  <button onclick="uploadAll()">⬆️ Upload all museums</button>
+  <div id="log"></div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBqxu8_hC5cw_-p4mufOuxCOC8ZpEgROHI",
+      authDomain: "museums-wsb.firebaseapp.com",
+      projectId: "museums-wsb",
+      storageBucket: "museums-wsb.firebasestorage.app",
+      messagingSenderId: "560360740833",
+      appId: "1:560360740833:web:6dfe7cb23bf94ee49a64a0"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    const museums = [
+      { id:"id_01", name:"Silesian Museum", city:"Katowice", category:"History & Art", rating:4.6, hours:"Tue–Sun 10:00–20:00, Mon closed", address:"ul. T. Dobrowolskiego 1, 40-205 Katowice", phone:"+48 32 779 93 00", lat:50.2638049, lng:19.0326475, description:"One of the largest museums in Poland, housed in a former coal mine. Presents the history, culture and art of the Silesian region across stunning underground galleries." },
+      { id:"id_02", name:"Wilson Shaft Gallery", city:"Katowice", category:"Art", rating:4.5, hours:"Everyday 09:00–19:00", address:"ul. Oswobodzenia 1, 40-403 Katowice", phone:"+48 32 730 32 20", lat:50.2510817, lng:19.0812245, description:"A contemporary art gallery set inside a historic mine shaft building, showcasing rotating exhibitions from local and international artists." },
+      { id:"id_03", name:"Katowice History Museum (Main Building)", city:"Katowice", category:"History", rating:4.7, hours:"Tue–Fri 10:00–18:00, Sat 10:00–16:00, Sun 11:00–15:00", address:"ul. Ks. J. Szafranka 9, 40-025 Katowice", phone:"+48 32 256 18 10", lat:50.255337, lng:19.0258881, description:"The main branch of Katowice's history museum, documenting the city's development from a small settlement into one of Poland's major industrial centres." },
+      { id:"id_04", name:"Katowice History Museum (City Ethnology Department)", city:"Katowice", category:"History & Art", rating:4.6, hours:"Tue–Fri 10:00–18:00, Sat 10:00–16:00, Sun 11:00–15:00", address:"ul. Rymarska 4, 40-425 Katowice", phone:"+48 32 353 95 59", lat:50.2442527, lng:19.0793846, description:"Dedicated to the everyday life and traditions of Silesian people, with rich collections of folk art, costumes and household objects." },
+      { id:"id_05", name:"Katowice History Museum (Theatre and Film Department)", city:"Katowice", category:"History", rating:4.6, hours:"Tue 11:00–16:00, Wed–Fri 11:00–15:00", address:"ul. M. Kopernika 11, 40-064 Katowice", phone:"+48 32 745 17 28", lat:50.2549214, lng:19.012874, description:"Chronicles the rich theatrical and cinematic history of the Silesian region, featuring costumes, posters, props and archive footage." },
+      { id:"id_06", name:"Katowice History Museum (Saint Michael the Archangel Church)", city:"Katowice", category:"History & Art", rating:4.6, hours:"Area: daily; Interior: during services", address:"Park im. T. Kościuszki, ul. Kościuszki 87, 40-523 Katowice", phone:"+48 506 546 379", lat:50.2447685, lng:19.0010114, description:"A historic wooden church relocated to Kościuszki Park, representing the oldest surviving sacral architecture in the region." },
+      { id:"id_07", name:"Energy Museum", city:"Łaziska Górne", category:"Industrial", rating:4.7, hours:"Everyday 14:00–18:00", address:"Wyzwolenia 30, 43-170 Łaziska Górne", phone:"+48 603 155 562", lat:50.1340794, lng:18.8459889, description:"Housed in a historic power plant, this museum traces the history of energy production in Silesia with original turbines and interactive exhibits." },
+      { id:"id_08", name:"Coal Mining Museum", city:"Zabrze", category:"Industrial", rating:4.4, hours:"Mon–Sun 09:00–18:00", address:"Multiple locations in Zabrze", phone:"+48 32 271 40 77", lat:50.2875629, lng:18.7786444, description:"Descend into real mine shafts and experience the life of a miner first-hand. Authentic tunnels and machinery from Silesia's industrial heritage." },
+      { id:"id_09", name:"Castle Museum", city:"Pszczyna", category:"Historic museum", rating:4.8, hours:"Tue 10:00–15:00, Wed–Fri 09:00–16:00, Sat–Sun 10:00–17:00", address:"ul. Brama Wybrańców 1, 43-200 Pszczyna", phone:"+48 32 210 30 37", lat:49.978181, lng:18.9378539, description:"A magnificent 18th-century palace that once served as a residence for German emperors, housing an exceptional collection of period furniture and royal memorabilia." },
+      { id:"id_10", name:"Museum of Technology and Contemporary Folk Culture (Carbonarium)", city:"Jastrzębie-Zdrój", category:"Industrial museum", rating:4.4, hours:"Tue 10:00–18:00, Wed/Fri 08:00–16:00, Sat–Sun 11:00–19:00", address:"Towarowa 7, 44-338 Jastrzębie-Zdrój", phone:"+48 32 440 81 77", lat:49.9425001, lng:18.5631902, description:"A creative space merging industrial heritage with contemporary folk culture, offering hands-on workshops and immersive technology exhibitions." },
+      { id:"id_11", name:"BWA Contemporary Art Gallery", city:"Katowice", category:"Art", rating:3.9, hours:"Tue–Sun 10:00–18:00", address:"al. Wojciecha Korfantego 6, 40-004 Katowice", phone:"+48 32 259 90 40", lat:50.2623085, lng:19.0194855, description:"A leading contemporary art gallery in Katowice presenting cutting-edge exhibitions by Polish and international artists across multiple media." },
+      { id:"id_12", name:"Zinc Metallurgy Museum", city:"Katowice", category:"Industrial", rating:4.7, hours:"Tue–Sun 10:00–18:00", address:"ul. 11 Listopada 50, 40-387 Katowice", phone:"+48 727 600 186", lat:50.2635451, lng:19.079129, description:"The only museum in Poland dedicated to the history of zinc metallurgy, set in a beautifully preserved 19th-century industrial complex." },
+      { id:"id_13", name:"Schoen Palace Museum", city:"Sosnowiec", category:"Art", rating:4.6, hours:"Tue–Sat 10:00–19:00, Sun 10:00–18:00", address:"ul. Chemiczna 12, 41-205 Sosnowiec", phone:"+48 32 363 45 10", lat:50.2955725, lng:19.1387883, description:"A stunning neo-baroque palace converted into a museum of art and local history, surrounded by an English-style park." },
+      { id:"id_14", name:"Sztygarka Museum", city:"Dąbrowa Górnicza", category:"Historic museum", rating:4.6, hours:"Tue–Wed 09:00–15:00, Thu 09:00–19:00, Fri 09:00–13:00, Sat 09:00–15:00, Sun 11:45–16:00", address:"Legionów Polskich 69, 41-300 Dąbrowa Górnicza", phone:"+48 32 262 36 95", lat:50.317742, lng:19.1812933, description:"Named after the mining overseers who once lived here, this historic villa museum explores the social and industrial history of Dąbrowa Górnicza." },
+      { id:"id_15", name:"Museum of Polish People's Republic", city:"Ruda Śląska", category:"Historic museum", rating:4.6, hours:"Wed–Sun 10:00–18:00", address:"ul. Zajęcza 42, 41-711 Ruda Śląska", phone:"+48 32 700 70 49", lat:50.2868635, lng:18.8304725, description:"A nostalgic journey through life in communist Poland, with authentic interiors, propaganda posters, and everyday objects from the PRL era." },
+      { id:"id_16", name:"Saturn Museum", city:"Czeladź", category:"Industrial", rating:4.6, hours:"Tue–Sun (seasonal hours)", address:"Dehnelów 43, 41-250 Czeladź", phone:"+48 32 265 42 93", lat:50.308739, lng:19.0608571, description:"Set in the historic Saturn mine complex, this museum explores the coal mining industry that shaped the identity of Czeladź and the wider region." },
+      { id:"id_17", name:"Będzin Castle", city:"Będzin", category:"Historic museum", rating:4.6, hours:"Seasonal hours", address:"ul. Gzichowska 15, 42-500 Będzin", phone:"+48 32 267 77 07", lat:50.328803, lng:19.1228957, description:"A medieval royal castle overlooking the Czarna Przemsza river, offering panoramic views and exhibitions on the history of the Będzin region." },
+      { id:"id_18", name:"Częstochowa Museum", city:"Częstochowa", category:"Historic museum", rating:4.6, hours:"Tue–Fri 09:00–15:30, Sat–Sun 11:00–17:00", address:"Aleja Najświętszej Maryi Panny 45, 42-217 Częstochowa", phone:"+48 34 360 56 31", lat:50.8113278, lng:19.1109261, description:"Located on the famous Jasna Góra avenue, this museum presents the history and cultural heritage of Częstochowa from prehistoric times to the present." },
+      { id:"id_19", name:"Brewery Museum", city:"Żywiec", category:"Historic museum", rating:4.6, hours:"Tue–Sun 09:00–17:00", address:"Browarna 88, 34-300 Żywiec", phone:"+48 33 861 24 57", lat:49.6628622, lng:19.1724622, description:"Explore the 160-year brewing tradition of Żywiec inside the original brewery buildings, with tastings and a fascinating look at the craft of beer-making." },
+      { id:"id_20", name:"Fire Museum", city:"Żory", category:"Industrial", rating:4.3, hours:"Tue/Wed/Fri 08:30–16:00, Thu 08:30–18:00, Sat–Sun 10:00–17:00", address:"Katowicka 3, 44-240 Żory", phone:"+48 32 307 27 98", lat:50.0441231, lng:18.6967855, description:"A vibrant museum dedicated to the history of firefighting in Silesia, featuring vintage fire engines, equipment and interactive demonstrations." },
+      { id:"id_21", name:"Upper Silesian Museum", city:"Bytom", category:"Historic museum", rating:4.7, hours:"Tue 09:00–15:00, Wed–Thu 12:00–18:00, Fri 09:00–15:00, Sat 11:00–16:00, Sun 12:00–17:00", address:"Wojciecha Korfantego 34, 41-902 Bytom", phone:"+48 32 281 97 33", lat:50.3490765, lng:18.9240147, description:"A remarkable collection spanning archaeology, natural history and fine arts, preserving the cultural identity of Upper Silesia through thousands of artifacts." },
+      { id:"id_22", name:"Gliwice Museum", city:"Gliwice", category:"Historic museum", rating:4.7, hours:"Tue 11:00–16:00, Wed–Thu 11:00–18:00, Fri 11:00–16:00, Sat–Sun 10:00–17:00", address:"Dolnych Wałów 8A, 44-100 Gliwice", phone:"+48 32 231 08 54", lat:50.2954552, lng:18.664746, description:"Housed in a historic water tower and adjacent buildings, this museum tells the story of Gliwice from its medieval origins to the present day." },
+      { id:"id_23", name:"Gliwice Radio Station", city:"Gliwice", category:"Industrial", rating:4.8, hours:"Tue 11:00–16:00, Wed–Thu 11:00–18:00, Fri 11:00–16:00, Sat–Sun 10:00–17:00", address:"Tarnogórska 129, 44-102 Gliwice", phone:"+48 32 300 04 04", lat:50.3127197, lng:18.6877172, description:"Home to the world's tallest wooden structure and site of the 1939 provocation that triggered WWII. A haunting and historically significant landmark." },
+      { id:"id_24", name:"Jaworzno Museum", city:"Jaworzno", category:"Historic museum", rating:4.6, hours:"Tue–Fri 09:00–16:00", address:"Pocztowa 5, 43-600 Jaworzno", phone:"+48 32 618 19 50", lat:50.2022327, lng:19.2732728, description:"A local history museum documenting the development of Jaworzno, with particular focus on its industrial past and the lives of its mining communities." },
+      { id:"id_25", name:"City Museum in Zabrze", city:"Zabrze", category:"Historic museum", rating:2.6, hours:"Tue/Wed/Fri 09:00–16:00, Thu 09:00–18:00, Sat–Sun 10:00–14:00", address:"Powstańców Śląskich 3, 41-800 Zabrze", phone:"+48 32 271 56 89", lat:50.30805, lng:18.7827268, description:"Documents the history of Zabrze through archaeological finds, archival photographs, and collections relating to the city's industrial and cultural development." },
+      { id:"id_26", name:"Mountain Museum", city:"Szczyrk", category:"Historic museum", rating:4.9, hours:"Sat–Sun 10:00–13:00", address:"Wypoczynkowa 5, 43-370 Szczyrk", phone:"+48 602 737 283", lat:49.7171603, lng:19.033025, description:"A charming small museum celebrating the mountain culture, traditions and natural environment of the Beskidy range surrounding Szczyrk." },
+      { id:"id_27", name:"Racibórz City Museum", city:"Racibórz", category:"Ethnography", rating:4.6, hours:"Tue–Fri 08:00–16:00, Sat 10:00–18:00, Sun 11:00–15:00", address:"Rzeźnicza 15, 47-400 Racibórz", phone:"+48 32 415 49 01", lat:50.0927521, lng:18.2150632, description:"Explores the history and ethnography of Racibórz and the surrounding region, with collections covering archaeology, crafts, and regional identity." },
+      { id:"id_28", name:"Zygmunt Krasiński Regional Museum", city:"Złoty Potok", category:"Ethnography", rating:4.2, hours:"Mon–Fri 09:00–14:00", address:"Kościuszki 11, 42-253 Złoty Potok", phone:"+48 34 329 11 62", lat:50.7143423, lng:19.4368099, description:"Located in the village associated with the Romantic poet Zygmunt Krasiński, this museum celebrates the natural beauty and literary heritage of the Złoty Potok area." },
+      { id:"id_29", name:"Edyta Stein Museum", city:"Lubliniec", category:"Ethnography", rating:4.2, hours:"Mon/Wed 08:00–16:00, Tue/Thu 10:00–18:00, Sun 09:00–17:00", address:"Edyty Stein 2, 42-700 Lubliniec", phone:"+48 534 200 582", lat:50.6693646, lng:18.6804261, description:"Dedicated to Edith Stein, a philosopher and Carmelite nun born in this region who was canonised by Pope John Paul II in 1998." },
+      { id:"id_30", name:"Zofia Kossak-Szatkowska Museum", city:"Górki Wielkie", category:"Historic museum", rating:4.7, hours:"Tue/Thu/Fri/Sat 09:00–15:00, Wed 09:00–16:00, Sun 10:00–14:00", address:"Stary Dwór 2, 43-436 Górki Wielkie", phone:"+48 33 812 95 25", lat:49.7820948, lng:18.8245303, description:"The family home of Nobel Prize-nominated writer Zofia Kossak-Szatkowska, preserved as a memorial museum with original furnishings and manuscripts." },
+      { id:"id_31", name:"Bread, School and Curiosities Museum", city:"Radzionków", category:"Historic museum", rating:4.6, hours:"By booking / scheduled groups", address:"Z. Nałkowskiej 5, 41-922 Radzionków", phone:"+48 32 387 17 60", lat:50.3823842, lng:18.8989158, description:"A quirky and delightful museum exploring the history of baking, education, and everyday curiosities from the Silesian past. Ideal for school visits." },
+      { id:"id_32", name:"Mysłowice City Museum", city:"Mysłowice", category:"Historic museum", rating:4.7, hours:"Seasonal hours, generally Tue–Sun", address:"Stadionowa 7A, 41-400 Mysłowice", phone:"+48 32 222 13 18", lat:50.2275342, lng:19.142421, description:"Traces the history of Mysłowice from a border town at the meeting point of three empires to a modern Silesian city, with engaging permanent and temporary exhibitions." },
+      { id:"id_33", name:"Museum of Marine and Inland Fauna and Flora", city:"Jaworze", category:"Science", rating:4.7, hours:"Tue–Fri 09:00–15:00, Sat–Sun 13:00–18:00", address:"Wapienicka 120, 43-384 Jaworze", phone:"+48 33 817 22 17", lat:49.7930527, lng:18.9676711, description:"An extraordinary natural history collection featuring thousands of specimens from oceans and freshwater environments around the world, perfect for curious minds of all ages." }
+    ];
+
+    window.uploadAll = async function() {
+      const log = document.getElementById('log');
+      log.innerHTML = '<p class="info">Starting upload...</p>';
+
+      for (const museum of museums) {
+        try {
+          await setDoc(doc(db, "museums", museum.id), museum);
+          log.innerHTML += `<p class="ok">✅ ${museum.id} — ${museum.name}</p>`;
+        } catch (e) {
+          log.innerHTML += `<p class="err">❌ ${museum.id} — ${e.message}</p>`;
+        }
+      }
+
+      log.innerHTML += '<p class="ok" style="margin-top:16px;font-size:1.1rem">🎉 Done! All museums uploaded to Firestore.</p>';
+    };
+  </script>
+</body>
+</html>

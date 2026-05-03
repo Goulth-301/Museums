@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Museums of Our Own</title>
+  <link rel="stylesheet" type="text/css" href="./style.css" />
+
+  <style>
+    /* ── Museum cards section ── */
+    .museums-section {
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .museums-section-title {
+      background-color: var(--brown-label-bg);
+      padding: 10px 20px;
+      border-radius: 10px;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+
+    .museums-section-title h2 {
+      font-size: 1.8rem;
+      font-weight: 400;
+      color: var(--black);
+    }
+
+    .museum-card {
+      background-color: var(--dark-content-bg);
+      border-radius: 10px;
+      display: flex;
+      overflow: hidden;
+      min-height: 200px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .museum-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    .museum-card-image {
+      flex: 0 0 280px;
+      overflow: hidden;
+      background: #1a1a1a;
+    }
+
+    .museum-card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 0;
+      display: block;
+    }
+
+    .museum-card-body {
+      flex: 1;
+      padding: 28px 32px;
+      color: var(--white);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .museum-card-category {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--brown-label-bg);
+      font-family: "Helvetica", "Arial", sans-serif;
+    }
+
+    .museum-card-name {
+      font-size: 1.6rem;
+      font-weight: 400;
+      color: var(--white);
+      line-height: 1.2;
+    }
+
+    .museum-card-city {
+      font-size: 0.9rem;
+      color: #aaaaaa;
+      font-family: "Helvetica", "Arial", sans-serif;
+      margin-top: -4px;
+    }
+
+    .museum-card-desc {
+      font-size: 0.95rem;
+      color: #cccccc;
+      font-family: "Helvetica", "Arial", sans-serif;
+      line-height: 1.6;
+      max-width: 700px;
+    }
+
+    .museum-card-link {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 0.85rem;
+      font-family: "Helvetica", "Arial", sans-serif;
+      font-weight: 700;
+      color: var(--yellow-btn-bg);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      transition: color 0.2s ease;
+    }
+
+    .museum-card-link:hover { color: var(--white); }
+
+    /* Loading & error states */
+    .loading-msg, .error-msg {
+      font-family: "Helvetica", "Arial", sans-serif;
+      padding: 20px;
+      color: #aaa;
+      text-align: center;
+    }
+    .error-msg { color: #eb5757; }
+  </style>
+</head>
+<body>
+  <div class="website-container">
+    <header>
+      <h1>Museums of Our Own</h1>
+    </header>
+
+    <nav class="main-nav">
+      <div class="nav-dots left-dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <div class="nav-links">
+        <a href="index.html">Our Museums</a>
+        <a href="map.html">Map</a>
+        <a href="#">Reservations</a>
+        <a href="about.html">About Us</a>
+      </div>
+      <div class="nav-dots right-dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </nav>
+
+    <main>
+      <!-- Hero card -->
+      <div class="hero-card">
+        <div class="text-column">
+          <div class="title-label">
+            <h2>Winged Hussars</h2>
+          </div>
+          <div class="bottom-text">
+            <p class="exhibition-tag">Exhibition</p>
+            <p class="dates">20 March - 27 July 2027</p>
+            <a href="#" class="book-now-btn">Book Now</a>
+          </div>
+        </div>
+        <div class="image-column">
+          <img src="home_hussar.jpg" alt="winged_hussar_image" />
+        </div>
+      </div>
+
+      <!-- Museum cards — filled by Firebase -->
+      <div class="museums-section">
+        <div class="museums-section-title">
+          <h2>Our Museums</h2>
+        </div>
+        <div id="museums-list">
+          <p class="loading-msg">Loading museums...</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp }          from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, orderBy }
+                                      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getStorage, ref, getDownloadURL }
+                                      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBqxu8_hC5cw_-p4mufOuxCOC8ZpEgROHI",
+      authDomain: "museums-wsb.firebaseapp.com",
+      projectId: "museums-wsb",
+      storageBucket: "museums-wsb.firebasestorage.app",
+      messagingSenderId: "560360740833",
+      appId: "1:560360740833:web:6dfe7cb23bf94ee49a64a0"
+    };
+
+    const app     = initializeApp(firebaseConfig);
+    const db      = getFirestore(app);
+    const storage = getStorage(app);
+    const list    = document.getElementById('museums-list');
+
+    async function getPhotoURL(museumId) {
+      // Try Firebase Storage first, fall back to local file
+      try {
+        const storageRef = ref(storage, `museums/${museumId}.jpg`);
+        return await getDownloadURL(storageRef);
+      } catch {
+        try {
+          const storageRef = ref(storage, `museums/${museumId}.jpeg`);
+          return await getDownloadURL(storageRef);
+        } catch {
+          // Fall back to local museums_pictures folder
+          return `museums_pictures/${museumId}.jpg`;
+        }
+      }
+    }
+
+    async function loadMuseums() {
+      try {
+        const q = query(collection(db, "museums"), orderBy("name"));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          list.innerHTML = '<p class="error-msg">No museums found. Have you run the upload tool?</p>';
+          return;
+        }
+
+        list.innerHTML = '';
+
+        for (const docSnap of snapshot.docs) {
+          const m = docSnap.data();
+          const photoURL = m.photoURL || `museums_pictures/${docSnap.id}.jpg`;
+
+          const card = document.createElement('div');
+          card.className = 'museum-card';
+          card.innerHTML = `
+            <div class="museum-card-image">
+              <img src="${photoURL}" alt="${m.name}" onerror="this.style.display='none'">
+            </div>
+            <div class="museum-card-body">
+              <span class="museum-card-category">${m.category || ''}</span>
+              <h3 class="museum-card-name">${m.name}</h3>
+              <p class="museum-card-city">📍 ${m.city}</p>
+              <p class="museum-card-desc">${m.description || ''}</p>
+              <a href="#" class="museum-card-link">View details →</a>
+            </div>
+          `;
+          list.appendChild(card);
+        }
+
+      } catch (err) {
+        list.innerHTML = `<p class="error-msg">Error loading museums: ${err.message}</p>`;
+        console.error(err);
+      }
+    }
+
+    loadMuseums();
+  </script>
+</body>
+</html>
