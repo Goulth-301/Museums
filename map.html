@@ -1,130 +1,341 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Map - Museums of Our Own</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <link rel="stylesheet" type="text/css" href="./style.css" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Map - Museums of Our Own</title>
 
-    <style>
-      .map-section { display: flex; flex-direction: column; gap: 0; width: 100%; }
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" type="text/css" href="./style.css" />
 
-      .map-filter-bar {
-        display: flex; align-items: center; justify-content: space-between;
-        flex-wrap: wrap; gap: 0.6rem; padding: 0.8rem 1.2rem;
-        background: #111; border: 1px solid #2a2a2a;
-      }
+  <style>
+    .map-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      width: 100%;
+    }
 
-      .filter-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .map-filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      padding: 0.8rem 1.2rem;
+      background: #111;
+      border: 1px solid #2a2a2a;
+    }
 
-      .pill {
-        font-family: 'Jost', sans-serif; font-size: 0.65rem; letter-spacing: 0.1em;
-        text-transform: uppercase; border: 1px solid #3A3530; background: none;
-        cursor: pointer; padding: 0.3rem 0.8rem; color: #7A7068;
-        transition: all 0.2s; border-radius: 2px;
-      }
-      .pill:hover { border-color: #B8935A; color: #B8935A; }
-      .pill.active { background: #B8935A; color: #fff; border-color: #B8935A; }
+    .filter-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
 
-      .museum-count { font-size: 0.72rem; color: #5A5048; letter-spacing: 0.08em; white-space: nowrap; }
-      .museum-count span { color: #B8935A; font-weight: 500; }
+    .pill {
+      font-family: 'Jost', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: 1px solid #3A3530;
+      background: none;
+      cursor: pointer;
+      padding: 0.3rem 0.8rem;
+      color: #7A7068;
+      transition: all 0.2s;
+      border-radius: 2px;
+    }
 
-      #map { width: 100%; height: 60vh; min-height: 350px; max-height: 800px; position: relative; }
+    .pill:hover {
+      border-color: #B8935A;
+      color: #B8935A;
+    }
 
-      .leaflet-popup-content-wrapper { padding: 0 !important; border-radius: 4px !important; box-shadow: 0 8px 32px rgba(0,0,0,0.4) !important; overflow: hidden; border: none !important; width: 280px; }
-      .leaflet-popup-content { margin: 0 !important; width: 280px !important; }
-      .leaflet-popup-tip { background: white !important; box-shadow: none !important; }
-      .leaflet-popup-close-button { color: #fff !important; font-size: 18px !important; padding: 6px 8px !important; z-index: 10; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+    .pill.active {
+      background: #B8935A;
+      color: #fff;
+      border-color: #B8935A;
+    }
 
-      .popup-card { width: 280px; font-family: 'Jost', sans-serif; }
-      .popup-photo { width: 100%; height: 140px; object-fit: cover; display: block; }
-      .popup-photo-placeholder { width: 100%; height: 140px; background: linear-gradient(135deg, #2A2018 0%, #1A1210 100%); display: flex; align-items: center; justify-content: center; }
-      .popup-photo-placeholder svg { opacity: 0.3; }
-      .popup-body { padding: 14px 16px 16px; background: #fff; }
-      .popup-category { font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: #B8935A; margin-bottom: 4px; }
-      .popup-name { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 600; color: #1A1612; line-height: 1.2; margin-bottom: 6px; }
-      .popup-rating { display: flex; align-items: center; gap: 5px; margin-bottom: 6px; }
-      .stars { color: #F4A922; font-size: 0.75rem; letter-spacing: 1px; }
-      .rating-num { font-size: 0.78rem; font-weight: 500; color: #1A1612; }
-      .popup-meta { font-size: 0.75rem; color: #6B6256; display: flex; flex-direction: column; gap: 3px; }
-      .popup-meta-row { display: flex; align-items: flex-start; gap: 6px; }
-      .popup-meta-icon { color: #B8935A; flex-shrink: 0; margin-top: 1px; }
-      .popup-divider { height: 1px; background: #F0EBE2; margin: 10px 0; }
-      .popup-btn { display: block; width: 100%; padding: 9px; background: #EEF4FF; border: none; border-radius: 2px; font-family: 'Jost', sans-serif; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.05em; color: #1A6BB5; cursor: pointer; text-align: center; transition: background 0.15s; }
-      .popup-btn:hover { background: #DCE9F8; }
+    .museum-count {
+      font-size: 0.72rem;
+      color: #5A5048;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
 
-      .map-legend { position: absolute; bottom: 30px; left: 14px; z-index: 999; background: rgba(26,22,18,0.92); border: 1px solid #3A3530; padding: 12px 16px; backdrop-filter: blur(8px); }
-      .legend-title { font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: #5A5048; margin-bottom: 8px; }
-      .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 0.72rem; color: #9A8E80; }
-      .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .museum-count span {
+      color: #B8935A;
+      font-weight: 500;
+    }
 
-      .leaflet-marker-icon { margin-left: 0 !important; margin-top: 0 !important; }
-      .leaflet-marker-icon div { overflow: visible !important; }
-    </style>
-  </head>
-  <body>
-    <div class="website-container">
-      <header>
-        <h1>Museums of Our Own</h1>
-      </header>
+    #map {
+      width: 100%;
+      height: 60vh;
+      min-height: 350px;
+      max-height: 800px;
+      position: relative;
+    }
 
-      <nav class="main-nav">
-        <div class="nav-dots left-dots">
-          <div class="dot"></div>
-          <div class="dot"></div>
+    .leaflet-popup-content-wrapper {
+      padding: 0 !important;
+      border-radius: 4px !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+      overflow: hidden;
+      border: none !important;
+      width: 280px;
+    }
+
+    .leaflet-popup-content {
+      margin: 0 !important;
+      width: 280px !important;
+    }
+
+    .leaflet-popup-tip {
+      background: white !important;
+      box-shadow: none !important;
+    }
+
+    .leaflet-popup-close-button {
+      color: #fff !important;
+      font-size: 18px !important;
+      padding: 6px 8px !important;
+      z-index: 10;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    }
+
+    .popup-card {
+      width: 280px;
+      font-family: 'Jost', sans-serif;
+    }
+
+    .popup-photo {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .popup-photo-placeholder {
+      width: 100%;
+      height: 140px;
+      background: linear-gradient(135deg, #2A2018 0%, #1A1210 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .popup-photo-placeholder svg {
+      opacity: 0.3;
+    }
+
+    .popup-body {
+      padding: 14px 16px 16px;
+      background: #fff;
+    }
+
+    .popup-category {
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #B8935A;
+      margin-bottom: 4px;
+    }
+
+    .popup-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #1A1612;
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+
+    .popup-rating {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 6px;
+    }
+
+    .stars {
+      color: #F4A922;
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+    }
+
+    .rating-num {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #1A1612;
+    }
+
+    .popup-meta {
+      font-size: 0.75rem;
+      color: #6B6256;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .popup-meta-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .popup-meta-icon {
+      color: #B8935A;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .popup-divider {
+      height: 1px;
+      background: #F0EBE2;
+      margin: 10px 0;
+    }
+
+    .popup-btn {
+      display: block;
+      width: 100%;
+      padding: 9px;
+      background: #EEF4FF;
+      border: none;
+      border-radius: 2px;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      color: #1A6BB5;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.15s;
+    }
+
+    .popup-btn:hover {
+      background: #DCE9F8;
+    }
+
+    .map-legend {
+      position: absolute;
+      bottom: 30px;
+      left: 14px;
+      z-index: 999;
+      background: rgba(26, 22, 18, 0.92);
+      border: 1px solid #3A3530;
+      padding: 12px 16px;
+      backdrop-filter: blur(8px);
+    }
+
+    .legend-title {
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #5A5048;
+      margin-bottom: 8px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 5px;
+      font-size: 0.72rem;
+      color: #9A8E80;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .leaflet-marker-icon {
+      margin-left: 0 !important;
+      margin-top: 0 !important;
+    }
+
+    .leaflet-marker-icon div {
+      overflow: visible !important;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="website-container">
+    <header>
+      <h1>Museums of Our Own</h1>
+    </header>
+
+    <nav class="main-nav">
+      <div class="nav-dots left-dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <div class="nav-links">
+        <a href="index.html">Our Museums</a>
+        <a href="map.html">Map</a>
+        <a href="#">Reservations</a>
+        <a href="about.html">About Us</a>
+      </div>
+      <div class="nav-dots right-dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </nav>
+
+    <main>
+      <!-- Título y descripción -->
+      <div class="content-card-vertical">
+        <div class="title-label centered-label">
+          <h2>Museums</h2>
         </div>
-        <div class="nav-links">
-          <a href="index.html">Our Museums</a>
-          <a href="map.html">Map</a>
-          <a href="#">Reservations</a>
-          <a href="about.html">About Us</a>
+        <div class="description-box">
+          <p>
+            Our partnered museums are all conveniently highlighted on this
+            interactive map, making it easy for you to explore their locations
+            and plan your visits.
+          </p>
         </div>
-        <div class="nav-dots right-dots">
-          <div class="dot"></div>
-          <div class="dot"></div>
-        </div>
-      </nav>
+      </div>
 
-      <main>
-        <!-- Título y descripción -->
-        <div class="content-card-vertical">
-          <div class="title-label centered-label">
-            <h2>Museums</h2>
+      <!-- Mapa a ancho completo -->
+      <div class="map-section">
+        <div class="map-filter-bar">
+          <div class="filter-pills" id="filters">
+            <button class="pill active" data-cat="all">All</button>
+            <button class="pill" data-cat="History">History</button>
+            <button class="pill" data-cat="History & Art">History & Art</button>
+            <button class="pill" data-cat="Art">Art</button>
+            <button class="pill" data-cat="Art gallery">Art Gallery</button>
+            <button class="pill" data-cat="Industrial">Industrial</button>
+            <button class="pill" data-cat="Industrial museum">Industrial Museum</button>
+            <button class="pill" data-cat="Historic museum">Historic Museum</button>
+            <button class="pill" data-cat="Science">Science</button>
+            <button class="pill" data-cat="Ethnography">Ethnography</button>
+            <button class="pill" data-cat="Museum">Museum</button>
+            <button class="pill" data-cat="Local history museum">Local History Museum</button>
+            <button class="pill" data-cat="Technology museum">Technology Museum</button>
           </div>
-          <div class="description-box">
-            <p>
-              Our partnered museums are all conveniently highlighted on this
-              interactive map, making it easy for you to explore their locations
-              and plan your visits.
-            </p>
+          <div class="museum-count">
+            Showing: <span id="visibleCount">33</span> museums
           </div>
         </div>
+        <div id="map"></div>
+      </div>
+    </main>
+  </div>
 
-        <!-- Mapa a ancho completo -->
-        <div class="map-section">
-          <div class="map-filter-bar">
-            <div class="filter-pills" id="filters">
-              <button class="pill active" data-cat="all">All</button>
-              <button class="pill" data-cat="History">History</button>
-              <button class="pill" data-cat="Art">Art</button>
-              <button class="pill" data-cat="Industrial">Industrial</button>
-              <button class="pill" data-cat="Science">Science</button>
-              <button class="pill" data-cat="Ethnography">Ethnography</button>
-            </div>
-            <div class="museum-count">
-              Showing: <span id="visibleCount">33</span> museums
-            </div>
-          </div>
-          <div id="map"></div>
-        </div>
-      </main>
-    </div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="map.js"></script>
+</body>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="map.js"></script>
-  </body>
 </html>
