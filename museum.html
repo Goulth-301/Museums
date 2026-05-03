@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Museum - Museums of Our Own</title>
+  <link rel="stylesheet" type="text/css" href="./style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    .museum-detail { display: flex; flex-direction: column; gap: 30px; padding: 40px 0; }
+
+    /* Hero */
+    .museum-hero {
+      background: var(--dark-content-bg);
+      border-radius: 10px;
+      display: flex;
+      overflow: hidden;
+      min-height: 350px;
+    }
+    .museum-hero-image {
+      flex: 0 0 45%;
+      overflow: hidden;
+    }
+    .museum-hero-image img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      border-radius: 0;
+      display: block;
+    }
+    .museum-hero-info {
+      flex: 1;
+      padding: 36px 40px;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .museum-hero-category {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--brown-label-bg);
+      font-family: "Helvetica", sans-serif;
+      margin-bottom: 8px;
+    }
+    .museum-hero-name {
+      font-family: "Playfair Display", serif;
+      font-size: 2.4rem;
+      font-weight: 400;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .museum-hero-city {
+      font-size: 1rem;
+      color: #aaa;
+      font-family: "Helvetica", sans-serif;
+      margin-bottom: 20px;
+    }
+    .museum-hero-rating {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .stars { color: #F4A922; font-size: 1rem; }
+    .rating-num { color: #aaa; font-size: 0.9rem; font-family: "Helvetica", sans-serif; }
+
+    .museum-hero-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-family: "Helvetica", sans-serif;
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+    .meta-row { display: flex; align-items: flex-start; gap: 10px; }
+    .meta-icon { color: var(--brown-label-bg); flex-shrink: 0; }
+
+    .museum-website-btn {
+      display: inline-block;
+      margin-top: 24px;
+      padding: 10px 24px;
+      background: var(--brown-label-bg);
+      color: white;
+      border-radius: 6px;
+      font-family: "Helvetica", sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      transition: background 0.2s;
+    }
+    .museum-website-btn:hover { background: #7a6244; color: white; }
+
+    /* Cards row */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .detail-card {
+      background: var(--dark-content-bg);
+      border-radius: 10px;
+      padding: 28px 32px;
+      color: white;
+    }
+    .detail-card.full-width { grid-column: 1 / -1; }
+    .detail-card-title {
+      background: var(--brown-label-bg);
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: black;
+      margin-bottom: 18px;
+      font-family: "Helvetica", sans-serif;
+    }
+    .detail-card p {
+      font-family: "Helvetica", sans-serif;
+      font-size: 0.95rem;
+      color: #ccc;
+      line-height: 1.7;
+    }
+    .detail-card ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .detail-card ul li {
+      font-family: "Helvetica", sans-serif;
+      font-size: 0.9rem;
+      color: #ccc;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.5;
+    }
+    .detail-card ul li::before {
+      content: "—";
+      color: var(--brown-label-bg);
+      flex-shrink: 0;
+    }
+
+    /* Ticket box */
+    .ticket-highlight {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .ticket-pill {
+      background: #1a1a1a;
+      border: 1px solid #3a3a3a;
+      border-radius: 6px;
+      padding: 10px 18px;
+      text-align: center;
+    }
+    .ticket-pill-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #777;
+      font-family: "Helvetica", sans-serif;
+      margin-bottom: 4px;
+    }
+    .ticket-pill-price {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--yellow-btn-bg);
+      font-family: "Helvetica", sans-serif;
+    }
+    .ticket-free-badge {
+      display: inline-block;
+      background: #1a4a1a;
+      border: 1px solid #2a7a2a;
+      color: #6fcf97;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-family: "Helvetica", sans-serif;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    /* Social media */
+    .social-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .social-link {
+      display: inline-block;
+      padding: 7px 16px;
+      background: #1a1a1a;
+      border: 1px solid #3a3a3a;
+      border-radius: 6px;
+      font-family: "Helvetica", sans-serif;
+      font-size: 0.8rem;
+      color: #ccc;
+      text-transform: capitalize;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .social-link:hover { border-color: var(--brown-label-bg); color: var(--brown-label-bg); }
+
+    /* Back button */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: "Helvetica", sans-serif;
+      font-size: 0.85rem;
+      color: #aaa;
+      transition: color 0.2s;
+      margin-bottom: 10px;
+    }
+    .back-btn:hover { color: white; }
+
+    /* Loading */
+    .loading-msg { font-family: "Helvetica", sans-serif; padding: 60px 20px; color: #aaa; text-align: center; font-size: 1.1rem; }
+    .error-msg { color: #eb5757; }
+
+    @media (max-width: 768px) {
+      .museum-hero { flex-direction: column; }
+      .museum-hero-image { flex: 0 0 240px; }
+      .detail-grid { grid-template-columns: 1fr; }
+      .detail-card.full-width { grid-column: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="website-container">
+    <header>
+      <h1>Museums of Our Own</h1>
+    </header>
+
+    <nav class="main-nav">
+      <div class="nav-dots left-dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <div class="nav-links">
+        <a href="index.html">Our Museums</a>
+        <a href="map.html">Map</a>
+        <a href="#">Reservations</a>
+        <a href="about.html">About Us</a>
+      </div>
+      <div class="nav-dots right-dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </nav>
+
+    <main>
+      <div id="museum-content">
+        <p class="loading-msg">Loading museum...</p>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { initializeApp }     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBqxu8_hC5cw_-p4mufOuxCOC8ZpEgROHI",
+      authDomain: "museums-wsb.firebaseapp.com",
+      projectId: "museums-wsb",
+      storageBucket: "museums-wsb.firebasestorage.app",
+      messagingSenderId: "560360740833",
+      appId: "1:560360740833:web:6dfe7cb23bf94ee49a64a0"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    function renderStars(rating) {
+      const full = Math.floor(rating);
+      const half = rating % 1 >= 0.5;
+      let s = '';
+      for (let i = 1; i <= 5; i++) {
+        if (i <= full) s += '★';
+        else if (i === full + 1 && half) s += '½';
+        else s += '☆';
+      }
+      return s;
+    }
+
+    function renderSocialMedia(socialMedia) {
+      if (!socialMedia || Object.keys(socialMedia).length === 0) return '<p style="color:#666;font-family:Helvetica,sans-serif;font-size:0.9rem">No social media available</p>';
+      return `<div class="social-links">
+        ${Object.entries(socialMedia).filter(([,url]) => url).map(([platform, url]) =>
+          `<a href="${url}" target="_blank" class="social-link">${platform}</a>`
+        ).join('')}
+      </div>`;
+    }
+
+    function renderTickets(tickets) {
+      if (!tickets) return '<p style="color:#666">No ticket information available</p>';
+
+      let html = '';
+
+      if (tickets.freeEntry && tickets.freeEntry !== 'None') {
+        html += `<div class="ticket-free-badge">🎟 Free entry: ${tickets.freeEntry}</div>`;
+      }
+
+      html += '<div class="ticket-highlight">';
+      if (tickets.normal !== null && tickets.normal !== undefined) {
+        html += `<div class="ticket-pill"><div class="ticket-pill-label">Normal</div><div class="ticket-pill-price">${tickets.normal === 0 ? 'Free' : tickets.normal + ' zł'}</div></div>`;
+      }
+      if (tickets.reduced !== null && tickets.reduced !== undefined) {
+        html += `<div class="ticket-pill"><div class="ticket-pill-label">Reduced</div><div class="ticket-pill-price">${tickets.reduced === 0 ? 'Free' : tickets.reduced + ' zł'}</div></div>`;
+      }
+      if (tickets.family !== null && tickets.family !== undefined) {
+        html += `<div class="ticket-pill"><div class="ticket-pill-label">Family</div><div class="ticket-pill-price">${tickets.family === 0 ? 'Free' : tickets.family + ' zł'}</div></div>`;
+      }
+      html += '</div>';
+
+      if (tickets.notes) {
+        html += `<p style="font-size:0.85rem;color:#999;font-family:Helvetica,sans-serif;line-height:1.7;margin-top:12px">${tickets.notes}</p>`;
+      }
+
+      return html;
+    }
+
+    async function loadMuseum() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      const content = document.getElementById('museum-content');
+
+      if (!id) {
+        content.innerHTML = '<p class="loading-msg error-msg">No museum ID provided.</p>';
+        return;
+      }
+
+      try {
+        const snap = await getDoc(doc(db, "museums", id));
+        if (!snap.exists()) {
+          content.innerHTML = '<p class="loading-msg error-msg">Museum not found.</p>';
+          return;
+        }
+
+        const m = snap.data();
+        document.title = `${m.name} - Museums of Our Own`;
+
+        const photoSrc = m.photoURL || `museums_pictures/${id}.jpg`;
+
+        content.innerHTML = `
+          <div class="museum-detail">
+            <a href="index.html" class="back-btn">← Back to all museums</a>
+
+            <!-- Hero -->
+            <div class="museum-hero">
+              <div class="museum-hero-image">
+                <img src="${photoSrc}" alt="${m.name}" onerror="this.src='museums_pictures/${id}.jpeg';this.onerror=null;">
+              </div>
+              <div class="museum-hero-info">
+                <div>
+                  <div class="museum-hero-category">${m.category || ''}</div>
+                  <div class="museum-hero-name">${m.name}</div>
+                  <div class="museum-hero-city">📍 ${m.city}</div>
+                  <div class="museum-hero-rating">
+                    <span class="stars">${renderStars(m.rating)}</span>
+                    <span class="rating-num">${m.rating} / 5</span>
+                  </div>
+                </div>
+                <div class="museum-hero-meta">
+                  <div class="meta-row"><span class="meta-icon">🕐</span><span>${m.hours}</span></div>
+                  <div class="meta-row"><span class="meta-icon">📍</span><span>${m.address}</span></div>
+                  <div class="meta-row"><span class="meta-icon">📞</span><span>${m.phone}</span></div>
+                </div>
+                ${m.website ? `<a href="${m.website}" target="_blank" class="museum-website-btn">Visit official website →</a>` : ''}
+              </div>
+            </div>
+
+            <!-- Detail grid -->
+            <div class="detail-grid">
+
+              <!-- Description -->
+              <div class="detail-card full-width">
+                <div class="detail-card-title">About</div>
+                <p>${m.description_long || m.description || 'No description available.'}</p>
+              </div>
+
+              <!-- Tickets -->
+              <div class="detail-card">
+                <div class="detail-card-title">Ticket Prices</div>
+                ${renderTickets(m.tickets)}
+              </div>
+
+              <!-- Services -->
+              <div class="detail-card">
+                <div class="detail-card-title">Available Services</div>
+                <p>${m.services || 'No information available.'}</p>
+                ${m.eventsUrl ? `<a href="${m.eventsUrl}" target="_blank" style="display:inline-block;margin-top:16px;color:var(--brown-label-bg);font-family:Helvetica,sans-serif;font-size:0.85rem;font-weight:700;">View upcoming events →</a>` : ''}
+              </div>
+
+              <!-- Social Media -->
+              <div class="detail-card full-width">
+                <div class="detail-card-title">Social Media</div>
+                ${renderSocialMedia(m.socialMedia)}
+              </div>
+
+            </div>
+          </div>
+        `;
+
+      } catch (err) {
+        content.innerHTML = `<p class="loading-msg error-msg">Error loading museum: ${err.message}</p>`;
+        console.error(err);
+      }
+    }
+
+    loadMuseum();
+  </script>
+</body>
+</html>
